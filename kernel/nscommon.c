@@ -54,7 +54,8 @@ static void ns_debug(struct ns_common *ns, const struct proc_ns_operations *ops)
 }
 #endif
 
-int __ns_common_init(struct ns_common *ns, u32 ns_type, const struct proc_ns_operations *ops, int inum)
+int __ns_common_init(struct ns_common *ns, u32 ns_type,
+		     const struct proc_ns_operations *ops, int inum, bool internal)
 {
 	int ret = 0;
 
@@ -82,11 +83,17 @@ int __ns_common_init(struct ns_common *ns, u32 ns_type, const struct proc_ns_ope
 	if (ret)
 		return ret;
 
-	ret = security_namespace_init(ns);
-	if (ret) {
-		if (!inum)
-			proc_free_inum(ns->inum);
-		return ret;
+	/*
+	 * A kernel-internal namespace never becomes visible to user space, so
+	 * there is nothing for an LSM to attach to or to check.
+	 */
+	if (!internal) {
+		ret = security_namespace_init(ns);
+		if (ret) {
+			if (!inum)
+				proc_free_inum(ns->inum);
+			return ret;
+		}
 	}
 
 	/*
