@@ -1385,6 +1385,10 @@ config SPI_SPIDEV
 	help
 	  This supports user mode SPI protocol drivers.
 
+config SPI_ZERO_SPEED_KUNIT_TEST
+	tristate "KUnit proof: zero speed reaches SPI controllers"
+	depends on KUNIT
+
 config SPI_DMA_KUNIT_TEST
 	tristate "KUnit tests for SPI core DMA mapping" if !KUNIT_ALL_TESTS
 	depends on KUNIT && HAS_DMA
